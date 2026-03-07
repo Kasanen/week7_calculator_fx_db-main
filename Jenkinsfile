@@ -16,7 +16,7 @@ pipeline{
 
       stage('check') {
           steps {
-            git url: 'https://github.com/Kasanen/Week5Assignment.git', branch: 'main'
+            git url: 'https://github.com/Kasanen/week7_calculator_fx_db-main.git', branch: 'main'
           }
       }
 

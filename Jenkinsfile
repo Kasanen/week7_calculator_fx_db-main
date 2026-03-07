@@ -12,55 +12,77 @@ pipeline{
         DOCKER_IMAGE_TAG = 'latest'
     }
 
-    stages{
 
-      stage('check') {
-          steps {
-            git url: 'https://github.com/Kasanen/week7_calculator_fx_db-main.git', branch: 'main'
-          }
-      }
+    stages {
+        stage('Setup Maven') {
+            steps {
+                script {
+                    def mvnHome = tool name: 'Maven 3.8.7', type: 'maven'
+                    env.PATH = "${mvnHome}/bin:${env.PATH}"
+                }
+            }
+        }
 
-      stage('Run Tests') {
-          steps {
-              sh 'mvn clean test'
-          }
-      }
+        stage('check') {
+            steps {
+                git url: 'https://github.com/Kasanen/week7_calculator_fx_db-main.git', branch: 'main'
+            }
+        }
 
-      stage('Code Coverage') {
-          steps {
-              sh 'mvn jacoco:report'
-          }
-      }
 
-      stage('Publish Test Results') {
-          steps {
-              junit '**/target/surefire-reports/*.xml'
-          }
-      }
+        stage('Build') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'mvn clean package -DskipTests'
+                    } else {
+                        bat 'mvn clean package -DskipTests'
+                    }
+                }
+            }
+        }
 
-      stage('Publish Coverage Report') {
-          steps {
-              jacoco()
-          }
-      }
+        stage('Test') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'mvn test'
+                    } else {
+                        bat 'mvn test'
+                    }
+                }
+            }
+        }
 
-      stage('Build Docker Image') {
-          steps {
-              script {
-                  docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
-              }
-          }
-      }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "docker build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} ."
+                    } else {
+                        bat "docker build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
 
-      stage('Push Docker Image to Docker Hub') {
-          steps {
-              script {
-                  docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
-                      docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
-                  }
-              }
-          }
-      }
- 
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', env.DOCKERHUB_CREDENTIALS_ID) {
+                        docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
     }
+
+    post {
+        always {
+            junit '**/target/surefire-reports/*.xml'
+            jacoco execPattern: '**/target/jacoco.exec'
+        }
+    }
+
 }

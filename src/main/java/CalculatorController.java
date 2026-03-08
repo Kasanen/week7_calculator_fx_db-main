@@ -5,9 +5,12 @@ import javafx.scene.control.TextField;
 
 public class CalculatorController {
 
-    @FXML private TextField number1Field;
-    @FXML private TextField number2Field;
-    @FXML private Label resultLabel;
+    @FXML
+    private TextField number1Field;
+    @FXML
+    private TextField number2Field;
+    @FXML
+    private Label resultLabel;
 
     @FXML
     private void onCalculateClick() {
@@ -15,14 +18,13 @@ public class CalculatorController {
             double num1 = Double.parseDouble(number1Field.getText());
             double num2 = Double.parseDouble(number2Field.getText());
 
-            double sum = num1 + num2;
-            double product = num1 * num2;
-            double sub = num1 - num2;
+            double sum = sum(num1, num2);
+            double product = product(num1, num2);
+            double sub = sub(num1, num2);
             double div;
-            if(num2 != 0){
-                div = num1 / num2;
-            }
-            else{
+            if (num2 != 0) {
+                div = div(num1, num2);
+            } else {
                 div = Double.NaN;
             }
 
@@ -34,5 +36,21 @@ public class CalculatorController {
         } catch (NumberFormatException e) {
             resultLabel.setText("Please enter valid numbers!");
         }
+    }
+
+    public double sum(double num1, double num2) {
+        return num1 + num2;
+    }
+
+    public double product(double num1, double num2) {
+        return num1 * num2;
+    }
+
+    public double sub(double num1, double num2) {
+        return num1 - num2;
+    }
+
+    public double div(double num1, double num2) {
+        return num1 / num2;
     }
 }

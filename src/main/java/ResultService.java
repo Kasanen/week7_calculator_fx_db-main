@@ -2,10 +2,10 @@ import java.sql.*;
 
 public class ResultService {
 
-    private static final String DB_NAME = "calc_data";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "Test12";
-
+    private static final String DB_NAME = System.getenv("DB_NAME");
+    private static final String DB_USER = System.getenv("DB_USER");
+    private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
+    
     // Load MariaDB driver
     static {
         try {
@@ -26,7 +26,7 @@ public class ResultService {
                 "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     }
 
-    public static void saveResult(double n1, double n2, double sum, double product) {
+    public static void saveResult(double n1, double n2, double sum, double product, double sub, double div) {
         String dbUrl = getDatabaseUrl();
 
         try (Connection conn = DriverManager.getConnection(dbUrl, DB_USER, DB_PASSWORD);
@@ -40,22 +40,26 @@ public class ResultService {
                     number2 DOUBLE NOT NULL,
                     sum_result DOUBLE NOT NULL,
                     product_result DOUBLE NOT NULL,
+                    sub_result DOUBLE NOT NULL,
+                    div_result DOUBLE NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """;
             stmt.executeUpdate(createTable);
 
             // Insert the result
-            String insert = "INSERT INTO calc_results (number1, number2, sum_result, product_result) VALUES (?, ?, ?, ?)";
+            String insert = "INSERT INTO calc_results (number1, number2, sum_result, product_result, sub_result, div_result) VALUES (?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(insert)) {
                 ps.setDouble(1, n1);
                 ps.setDouble(2, n2);
                 ps.setDouble(3, sum);
                 ps.setDouble(4, product);
+                ps.setDouble(5, sub);
+                ps.setDouble(6, div);
                 ps.executeUpdate();
             }
 
-            System.out.println("✅ Result saved: " + n1 + ", " + n2 + " → Sum=" + sum + ", Product=" + product);
+            System.out.println("✅ Result saved: " + n1 + ", " + n2 + " → Sum=" + sum + ", Product=" + product + ", Subtract=" + sub + ", Division=" + div);
 
 
         } catch (SQLException e) {

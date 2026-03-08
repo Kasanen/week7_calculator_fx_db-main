@@ -10,6 +10,13 @@ pipeline{
         DOCKERHUB_CREDENTIALS_ID = 'Docker-Hub'
         DOCKERHUB_REPO = 'kak3r/sum-product_fx'
         DOCKER_IMAGE_TAG = 'latest'
+
+        // DB config for tests
+        DB_HOST = 'host.docker.internal'
+        DB_PORT = '3306'
+        DB_NAME = 'calc_data'
+        DB_USER = 'root'
+        DB_PASSWORD = 'Test12'
     }
 
 
@@ -43,16 +50,16 @@ pipeline{
         }
 
         stage('Test') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'mvn test'
-                    } else {
-                        bat 'mvn test'
-                    }
-                }
+    steps {
+        script {
+            if (isUnix()) {
+                sh 'echo "DB_HOST=$DB_HOST DB_PORT=$DB_PORT DB_NAME=$DB_NAME"; mvn test'
+            } else {
+                bat 'echo DB_HOST=%DB_HOST% DB_PORT=%DB_PORT% DB_NAME=%DB_NAME% && mvn test'
             }
         }
+    }
+}
 
         stage('Build Docker Image') {
             steps {

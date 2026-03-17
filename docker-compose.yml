@@ -21,9 +21,13 @@ services:
     # docker push yourname/sum-product-fx: last
     # then you can change the image in the following statment
     image: kak3r/sum-product_fx:latest
+    #image: sum-product_fx:local
     container_name: calculator-app
     depends_on:
       - db
+
+    user: "${UID:-1000}:${GID:-1000}"
+
     environment:
       DB_HOST: db
       DB_PORT: 3306
@@ -32,11 +36,17 @@ services:
       # make sure your DB_PASSWORD is correct mine is root
       DB_PASSWORD: Test12
       # DISPLAY: host.docker.internal:0
-      # DISPLAY: ${DISPLAY}
-    # volumes:
-    #    - /tmp/.X11-unix:/tmp/.X11-unix
-      # - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      # - /tmp/.docker.xauth:/tmp/.docker.xauth:ro
+      DISPLAY: ${DISPLAY:-:0}
+      XAUTHORITY: /tmp/.Xauthority
+
+
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOME}/.Xauthority:/tmp/.Xauthority:ro
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 #    network_mode: bridge # it cancels network of docker -> docker cannot find host db.
 volumes:
   db_data:
